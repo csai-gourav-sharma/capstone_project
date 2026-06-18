@@ -22,10 +22,10 @@ pipeline {
             }
         }
 
-        stage('Build & Compile') {
+        stage('Build & Package') {
             steps {
-                echo 'Compiling project...'
-                bat 'mvn clean compile -DskipTests'
+                echo 'Packaging project...'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
