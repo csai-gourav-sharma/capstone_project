@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -19,44 +20,35 @@ pipeline {
             steps {
                 bat 'cd'
                 bat 'dir'
-                bat 'dir stationery-management-system'
             }
         }
 
         stage('Build & Compile') {
             steps {
                 echo 'Compiling project...'
-                dir('stationery-management-system') {
-                    bat 'mvn clean compile -DskipTests'
-                }
+                bat 'mvn clean compile -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                dir('stationery-management-system') {
-                    bat 'mvn test'
-                }
+                bat 'mvn test'
             }
         }
 
         stage('Docker Build') {
             steps {
                 echo 'Building Docker images...'
-                dir('stationery-management-system/ci-cd') {
-                    bat 'docker compose build'
-                }
+                bat 'docker compose -f ci-cd\\docker-compose.yml build'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                dir('stationery-management-system/ci-cd') {
-                    bat 'docker compose down'
-                    bat 'docker compose up -d'
-                }
+                bat 'docker compose -f ci-cd\\docker-compose.yml down'
+                bat 'docker compose -f ci-cd\\docker-compose.yml up -d'
             }
         }
     }
@@ -75,3 +67,4 @@ pipeline {
         }
     }
 }
+```
