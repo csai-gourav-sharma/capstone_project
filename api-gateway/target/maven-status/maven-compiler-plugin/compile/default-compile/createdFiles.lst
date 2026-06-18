@@ -1,0 +1,4 @@
+com\sms\gateway\config\RouteConfig.class
+com\sms\gateway\GatewayApplication.class
+com\sms\gateway\config\JwtAuthFilter.class
+com\sms\gateway\config\CorsConfig.class
