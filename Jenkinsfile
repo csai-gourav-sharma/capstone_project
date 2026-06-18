@@ -1,55 +1,77 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.9'
-        jdk 'JDK 17'
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                // In actual deployment, this pulls the code from SCM.
-                // For local Jenkins pipeline runs, we can skip or run checkout scm.
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Workspace Check') {
             steps {
-                echo 'Building backend microservices...'
-                sh 'mvn clean package -DskipTests'
+                bat 'cd'
+                bat 'dir'
+                bat 'dir stationery-management-system'
+            }
+        }
+
+        stage('Build & Compile') {
+            steps {
+                echo 'Compiling project...'
+                dir('stationery-management-system') {
+                    bat 'mvn clean compile -DskipTests'
+                }
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                sh 'mvn test'
+                dir('stationery-management-system') {
+                    bat 'mvn test'
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
                 echo 'Building Docker images...'
-                sh 'docker compose -f ci-cd/docker-compose.yml build'
+                dir('stationery-management-system/ci-cd') {
+                    bat 'docker compose build'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying services with Docker Compose...'
-                sh 'docker compose -f ci-cd/docker-compose.yml up -d'
+                echo 'Deploying application...'
+                dir('stationery-management-system/ci-cd') {
+                    bat 'docker compose down'
+                    bat 'docker compose up -d'
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Build, Test, Docker Build and Deployment completed successfully!'
         }
+
         failure {
-            echo 'Pipeline failed.'
+            echo 'Pipeline failed. Check the console output for details.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
